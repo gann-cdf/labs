@@ -1,0 +1,19 @@
+{
+    "name": "gann-cdf/labs",
+    "description": "A lab management app",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Seth Battis",
+            "email": "sbattis@gannacademy.org"
+        }
+    ],
+    "require": {
+        "vlucas/phpdotenv": "^3.4"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env'); \""
+        ]
+    }
+}
