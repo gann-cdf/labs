@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Labs Queue</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
           integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
@@ -23,10 +25,10 @@
 
     if (!empty($_REQUEST['email']) && preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) && !empty($_FILES['upload']['tmp_name'])) {
         setcookie('email', $_REQUEST['email']);
-        $sep = getenv('SEPARATOR');
-        $location = getenv('LOCATION_CN');
+        $sep = getenv('QUEUE_NAME_SEPARATOR');
+        $location = getenv('QUEUE_CN');
         $filename = date('Y-m-d_H-i-s ') . $sep . strtolower($match[1]) . $sep . $_FILES['upload']['name'];
-        if (move_uploaded_file($_FILES['upload']['tmp_name'], getenv('DESTINATION') . "/$filename")) {
+        if (move_uploaded_file($_FILES['upload']['tmp_name'], getenv('QUEUE_DIR') . "/$filename")) {
             echo <<<EOT
 <div class="alert alert-success" role="alert">
     <code>$filename</code> was uploaded to $location and is now accessible there.
