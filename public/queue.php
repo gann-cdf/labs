@@ -1,34 +1,47 @@
-<!DOCTYPE html>
+<?php
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Dotenv\Dotenv;
+
+Dotenv::create(__DIR__ . '/..')->load();
+
+$db = new PDO(getenv('DB') . ':host' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE'), getenv('DB_USER'), getenv('DB_PASSWORD'));
+
+$statement = $db->prepare("SELECT * FROM `strings` WHERE `category` = 'queue.php'");
+$result = $statement->execute();
+$rows = $statement->fetchAll();
+$strings = [];
+foreach ($rows as $row) {
+    $strings[$row['id']] = $row['value'];
+}
+
+?><!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Labs Queue</title>
+    <title><?= $strings['QUEUE_TITLE'] ?></title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
           integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
 </head>
 <body>
+<?php include 'navbar.php'; ?>
 <div class="container">
     <div class="jumbotron">
-        <h1>Labs Queue</h1>
+        <h1><?= $strings['QUEUE_TITLE'] ?></h1>
         <hr>
-        <p>Load your files into the laser cutting queue here</p>
+        <p><?= $strings['QUEUE_SUBTITLE'] ?></p>
     </div>
 
     <?php
 
-    require_once __DIR__ . '/../vendor/autoload.php';
-
-    use Dotenv\Dotenv;
-
-    Dotenv::create(__DIR__ . '/..')->load();
-
     if (!empty($_REQUEST['email']) && preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) && !empty($_FILES['upload']['tmp_name'])) {
         setcookie('email', $_REQUEST['email']);
-        $sep = getenv('QUEUE_NAME_SEPARATOR');
-        $location = getenv('QUEUE_CN');
+        $sep = $strings['QUEUE_NAME_SEPARATOR'];
+        $location = $strings['QUEUE_CN'];
         $filename = date('Y-m-d_H-i-s ') . $sep . strtolower($match[1]) . $sep . $_FILES['upload']['name'];
-        if (move_uploaded_file($_FILES['upload']['tmp_name'], getenv('QUEUE_DIR') . "/$filename")) {
+        if (move_uploaded_file($_FILES['upload']['tmp_name'], $strings['QUEUE_DIR'] . "/$filename")) {
             echo <<<EOT
 <div class="alert alert-success" role="alert">
     <code>$filename</code> was uploaded to $location and is now accessible there.
