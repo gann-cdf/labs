@@ -1,13 +1,24 @@
 <?php
 
-use Dotenv\Dotenv;
-
 require_once __DIR__ . '/../vendor/autoload.php';
+
+use Dotenv\Dotenv;
 
 Dotenv::create(__DIR__ . '/..')->load();
 
-$queue = getenv('QUEUE_DIR');
-$weekly = getenv('QUEUE_WEEKLY_DIR');
+$db = new PDO(getenv('DB') . ':host' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE'), getenv('DB_USER'), getenv('DB_PASSWORD'));
+
+$statement = $db->prepare("SELECT * FROM `strings` WHERE `category` = 'queue.php'");
+$result = $statement->execute();
+$rows = $statement->fetchAll();
+$strings = [];
+foreach ($rows as $row) {
+    $strings[$row['id']] = $row['value'];
+}
+
+
+$queue = $strings['QUEUE_DIR'];
+$archive = $strings['QUEUE_ARCHIVE_DIR'];
 
 function emptyDir($dir)
 {
@@ -22,17 +33,17 @@ function emptyDir($dir)
     }
 }
 
-if (!file_exists($weekly)) {
+if (!file_exists($archive)) {
     if (count(scandir($queue)) > 2) {
-        mkdir($weekly);
+        mkdir($archive);
     }
 } else {
-    emptyDir($weekly);
+    emptyDir($archive);
 }
 
 foreach (array_diff(scandir($queue), ['.', '..']) as $file) {
     $path = "$queue/$file";
-    if ($path != $weekly) {
-        rename($path, "$weekly/$file");
+    if ($path != $archive && $file != '.DAV') {
+        rename($path, "$archive/$file");
     }
 }
