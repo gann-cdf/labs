@@ -24,19 +24,22 @@ foreach ($rows as $row) {
     <title><?= $strings['QUEUE_TITLE'] ?></title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
           integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/<?= $strings['FONT_AWESOME'] ?>.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <?php include 'navbar.php'; ?>
 <div class="container">
     <div class="jumbotron">
-        <h1><?= $strings['QUEUE_TITLE'] ?></h1>
+        <h1><i class="fas fa-folder-plus"></i> <?= $strings['QUEUE_TITLE'] ?></h1>
         <hr>
         <p><?= $strings['QUEUE_SUBTITLE'] ?></p>
     </div>
 
     <?php
 
-    if (!empty($_REQUEST['email']) && preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) && !empty($_FILES['upload']['tmp_name'])) {
+    if (empty($_REQUEST['email']) === false &&
+        preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) &&
+        empty($_FILES['upload']['tmp_name']) === false) {
         setcookie('email', $_REQUEST['email']);
         $sep = $strings['QUEUE_NAME_SEPARATOR'];
         $location = $strings['QUEUE_CN'];
@@ -56,7 +59,7 @@ EOT;
 EOT;
 
         }
-    } elseif (!empty($_FILES['upload']['name'])) {
+    } elseif (empty($_FILES['upload']['name']) === false) {
         echo <<<EOT
 <div class="alert alert-warning" role="alert">
     You must use your Gann email address!
@@ -64,12 +67,19 @@ EOT;
 EOT;
     }
 
+    $email = "";
+    if (empty($_REQUEST['email']) === false) {
+        $email = $_REQUEST['email'];
+    } elseif (empty($_COOKIE['email']) === false) {
+        $email = $_COOKIE['email'];
+    }
+
     ?>
     <form class="needs-validation" enctype="multipart/form-data" action="<?= $_SERVER['PHP_SELF'] ?>" method="post"
           novalidate>
         <div class="form-group">
             <input type="email" class="form-control" id="email" name="email"
-                   value="<?= (empty($_COOKIE['email']) ? $_REQUEST['email'] : $_COOKIE['email']) ?>"
+                   value="<?= $email ?>"
                    placeholder="Gann email address">
             <small>Email address</small>
         </div>
