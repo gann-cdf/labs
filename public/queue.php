@@ -16,8 +16,15 @@ foreach ($rows as $row) {
     $strings[$row['id']] = $row['value'];
 }
 
+$email = "";
+if (empty($_REQUEST['email']) === false) {
+    $email = $_REQUEST['email'];
+} elseif (empty($_COOKIE['email']) === false) {
+    $email = $_COOKIE['email'];
+}
+
 ?><!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -37,41 +44,47 @@ foreach ($rows as $row) {
 
     <?php
 
-    if (empty($_REQUEST['email']) === false &&
-        preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) &&
-        empty($_FILES['upload']['tmp_name']) === false) {
-        setcookie('email', $_REQUEST['email']);
-        $sep = $strings['QUEUE_NAME_SEPARATOR'];
-        $location = $strings['QUEUE_CN'];
-        $filename = date('Y-m-d_H-i-s ') . $sep . strtolower($match[1]) . $sep . $_FILES['upload']['name'];
-        if (move_uploaded_file($_FILES['upload']['tmp_name'], $strings['QUEUE_DIR'] . "/$filename")) {
+    $ready = true;
+    if (empty($_REQUEST) === false) {
+        if (empty($email) || preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) == false) {
             echo <<<EOT
+<div class="alert alert-warning" role="alert">
+    You must use your Gann email address!
+</div>
+EOT;
+            $ready = false;
+        }
+        if (empty($_FILES['upload']['name'])) {
+            echo <<<EOT
+<div class="alert alert-warning" role="alert">
+    Please select a file to upload!
+</div>
+EOT;
+            $ready = false;
+        }
+
+        if ($ready) {
+            setcookie('email', $_REQUEST['email']);
+            $sep = $strings['QUEUE_NAME_SEPARATOR'];
+            $location = $strings['QUEUE_CN'];
+            $filename = date('Y-m-d_H-i-s ') . $sep . strtolower($match[1]) . $sep . $_FILES['upload']['name'];
+            if (move_uploaded_file($_FILES['upload']['tmp_name'], $strings['QUEUE_DIR'] . "/$filename")) {
+                echo <<<EOT
 <div class="alert alert-success" role="alert">
     <code>$filename</code> was uploaded to $location and is now accessible there.
 </div>
 EOT;
 
-        } else {
-            echo <<<EOT
+            } else {
+                echo <<<EOT
 <div class="alert alert-danger" role="alert">
     Bad things happened!
 </div>
 EOT;
 
+            }
         }
-    } elseif (empty($_FILES['upload']['name']) === false) {
-        echo <<<EOT
-<div class="alert alert-warning" role="alert">
-    You must use your Gann email address!
-</div>
-EOT;
-    }
 
-    $email = "";
-    if (empty($_REQUEST['email']) === false) {
-        $email = $_REQUEST['email'];
-    } elseif (empty($_COOKIE['email']) === false) {
-        $email = $_COOKIE['email'];
     }
 
     ?>
