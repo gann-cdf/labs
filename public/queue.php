@@ -44,6 +44,14 @@ if (empty($_REQUEST['email']) === false) {
 
     <?php
 
+    if (empty($strings['QUEUE_ANNOUNCEMENT']) === false) {
+        echo <<<EOT
+<div class="alert alert-{$strings['QUEUE_ANNOUNCEMENT_LEVEL']}" role="alert">
+    {$strings['QUEUE_ANNOUNCEMENT']}
+</div>
+EOT;
+    }
+
     $ready = true;
     if (empty($_REQUEST) === false) {
         if (empty($email) || preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) == false) {
@@ -67,21 +75,33 @@ EOT;
             setcookie('email', $_REQUEST['email']);
             $sep = $strings['QUEUE_NAME_SEPARATOR'];
             $location = $strings['QUEUE_CN'];
-            $filename = date('Y-m-d_H-i-s ') . $sep . strtolower($match[1]) . $sep . $_FILES['upload']['name'];
-            if (move_uploaded_file($_FILES['upload']['tmp_name'], $strings['QUEUE_DIR'] . "/$filename")) {
-                echo <<<EOT
-<div class="alert alert-success" role="alert">
-    <code>$filename</code> was uploaded to $location and is now accessible there.
-</div>
-EOT;
-
-            } else {
+            $filenames = [];
+            $errors = [];
+            for ($i = 0; $i < count($_FILES['upload']['name']); $i++) {
+                $filename = date('Y-m-d_H-i-s ') . $sep . strtolower($match[1]) . $sep . $_FILES['upload']['name'][$i];
+                if (move_uploaded_file($_FILES['upload']['tmp_name'][$i], $strings['QUEUE_DIR'] . "/$filename")) {
+                    $filenames[] = $filename;
+                } else {
+                    $errors = $_FILES['upload']['name'][$i];
+                }
+            }
+            if (count($errors)) {
+                $list = implode(', ', $errors);
                 echo <<<EOT
 <div class="alert alert-danger" role="alert">
-    Bad things happened!
+    There was an error uploading $errors.
 </div>
 EOT;
-
+            }
+            if (count($filenames)) {
+                $list = implode(', ', $filenames);
+                $wasWere = (count($filenames) > 1 ? 'were' : 'was');
+                $isAre = (count($filenames) > 1 ? 'are' : 'is');
+                echo <<<EOT
+<div class="alert alert-success" role="alert">
+    $list $wasWere uploaded to $location and $isAre now accessible there.
+</div>
+EOT;
             }
         }
 
@@ -98,10 +118,10 @@ EOT;
         </div>
         <div class="form-group">
             <div class="custom-file">
-                <input type="file" class="custom-file-input" id="upload" name="upload">
+                <input type="file" multiple class="custom-file-input" id="upload" name="upload[]">
                 <label class="custom-file-label" for="upload">Choose file</label>
             </div>
-            <small>File to add to queue</small>
+            <small>Files to add to queue</small>
         </div>
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Add to Queue</button>
