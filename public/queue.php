@@ -55,6 +55,7 @@ EOT;
     $ready = true;
     if (empty($_REQUEST) === false) {
         if (empty($email) || preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) == false) {
+            /** @var string[] $match */
             echo <<<EOT
 <div class="alert alert-warning" role="alert">
     You must use your Gann email address!
@@ -74,12 +75,19 @@ EOT;
         if ($ready) {
             setcookie('email', $_REQUEST['email']);
             $sep = $strings['QUEUE_NAME_SEPARATOR'];
+            $username = $match[1];
             $location = $strings['QUEUE_CN'];
+            $destination = "{$strings['QUEUE_DIR']}/$username";
             $filenames = [];
             $errors = [];
+
+            if (file_exists($destination) === false) {
+                mkdir($destination);
+            }
+
             for ($i = 0; $i < count($_FILES['upload']['name']); $i++) {
-                $filename = date('Y-m-d_H-i-s ') . $sep . strtolower($match[1]) . $sep . $_FILES['upload']['name'][$i];
-                if (move_uploaded_file($_FILES['upload']['tmp_name'][$i], $strings['QUEUE_DIR'] . "/$filename")) {
+                $filename = date('Y-m-d_H-i-s ') . $sep . $_FILES['upload']['name'][$i];
+                if (move_uploaded_file($_FILES['upload']['tmp_name'][$i], "$destination/$filename")) {
                     $filenames[] = $filename;
                 } else {
                     $errors = $_FILES['upload']['name'][$i];
