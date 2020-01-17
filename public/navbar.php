@@ -36,6 +36,7 @@ EOT;
                     ?>
                 </div>
             </li>
+            <?= $strings['NAVBAR_ADDITIONAL_MENU_ITEMS'] ?>
         </ul>
     </div>
 </nav>

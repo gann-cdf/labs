@@ -86,7 +86,7 @@ EOT;
             }
 
             for ($i = 0; $i < count($_FILES['upload']['name']); $i++) {
-                $filename = date('Y-m-d_H-i-s ') . $sep . $_FILES['upload']['name'][$i];
+                $filename = date('Y-m-d_H-i-s') . $sep . $_FILES['upload']['name'][$i];
                 if (move_uploaded_file($_FILES['upload']['tmp_name'][$i], "$destination/$filename")) {
                     $filenames[] = $filename;
                 } else {
