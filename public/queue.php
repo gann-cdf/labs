@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../drupal.php';
 
 use Dotenv\Dotenv;
 
@@ -90,14 +91,14 @@ EOT;
                 if (move_uploaded_file($_FILES['upload']['tmp_name'][$i], "$destination/$filename")) {
                     $filenames[] = $filename;
                 } else {
-                    $errors = $_FILES['upload']['name'][$i];
+                    $errors[] = $_FILES['upload']['name'][$i];
                 }
             }
             if (count($errors)) {
                 $list = implode(', ', $errors);
                 echo <<<EOT
 <div class="alert alert-danger" role="alert">
-    There was an error uploading $errors.
+    There was an error uploading $list.
 </div>
 EOT;
             }
@@ -129,7 +130,7 @@ EOT;
                 <input type="file" multiple class="custom-file-input" id="upload" name="upload[]">
                 <label class="custom-file-label" for="upload">Choose file</label>
             </div>
-            <small>Files to add to queue</small>
+            <small>Files to add to queue (maximum size is <?= pretty_file_upload_max_size() ?>)</small>
         </div>
         <div class="form-group">
             <button type="submit" class="btn btn-primary">Add to Queue</button>
