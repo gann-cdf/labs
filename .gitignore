@@ -25,3 +25,6 @@ Thumbs.db
 !/logs/README.md
 /var/*
 !/var/README.md
+
+# convenience
+/public/favicons/

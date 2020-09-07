@@ -18,8 +18,12 @@ foreach ($rows as $row) {
 }
 
 $email = "";
-if (empty($_REQUEST['email']) === false) {
+if (isset($_REQUEST['email']) && empty($_REQUEST['email'])) {
+    unset($_COOKIE['email']);
+    setcookie('email', null);
+} elseif (empty($_REQUEST['email']) === false) {
     $email = $_REQUEST['email'];
+    setcookie('email', $email);
 } elseif (empty($_COOKIE['email']) === false) {
     $email = $_COOKIE['email'];
 }
@@ -33,6 +37,17 @@ if (empty($_REQUEST['email']) === false) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css"
           integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/<?= $strings['FONT_AWESOME'] ?>.js" crossorigin="anonymous"></script>
+    <style>
+        #queues {
+        }
+
+        #queues iframe {
+            border: none;
+            margin: 1rem;
+            height: 25vh;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
 <?php include 'navbar.php'; ?>
@@ -47,96 +62,52 @@ if (empty($_REQUEST['email']) === false) {
 
     if (empty($strings['QUEUE_ANNOUNCEMENT']) === false) {
         echo <<<EOT
-<div class="alert alert-{$strings['QUEUE_ANNOUNCEMENT_LEVEL']}" role="alert">
-    {$strings['QUEUE_ANNOUNCEMENT']}
-</div>
+    <div class="alert alert-{$strings['QUEUE_ANNOUNCEMENT_LEVEL']}" role="alert">
+        {$strings['QUEUE_ANNOUNCEMENT']}
+    </div>
 EOT;
     }
 
-    $ready = true;
-    if (empty($_REQUEST) === false) {
-        if (empty($email) || preg_match('/^([a-z0-9]+)@gannacademy.org$/i', $_REQUEST['email'], $match) == false) {
-            /** @var string[] $match */
-            echo <<<EOT
-<div class="alert alert-warning" role="alert">
-    You must use your Gann email address!
-</div>
-EOT;
-            $ready = false;
-        }
-        if (empty($_FILES['upload']['name'])) {
-            echo <<<EOT
-<div class="alert alert-warning" role="alert">
-    Please select a file to upload!
-</div>
-EOT;
-            $ready = false;
-        }
-
-        if ($ready) {
-            setcookie('email', $_REQUEST['email']);
-            $sep = $strings['QUEUE_NAME_SEPARATOR'];
-            $username = $match[1];
-            $location = $strings['QUEUE_CN'];
-            $destination = "{$strings['QUEUE_DIR']}/$username";
-            $filenames = [];
-            $errors = [];
-
-            if (file_exists($destination) === false) {
-                mkdir($destination);
-            }
-
-            for ($i = 0; $i < count($_FILES['upload']['name']); $i++) {
-                $filename = date('Y-m-d_H-i-s') . $sep . $_FILES['upload']['name'][$i];
-                if (move_uploaded_file($_FILES['upload']['tmp_name'][$i], "$destination/$filename")) {
-                    $filenames[] = $filename;
-                } else {
-                    $errors[] = $_FILES['upload']['name'][$i];
-                }
-            }
-            if (count($errors)) {
-                $list = implode(', ', $errors);
-                echo <<<EOT
-<div class="alert alert-danger" role="alert">
-    There was an error uploading $list.
-</div>
-EOT;
-            }
-            if (count($filenames)) {
-                $list = implode(', ', $filenames);
-                $wasWere = (count($filenames) > 1 ? 'were' : 'was');
-                $isAre = (count($filenames) > 1 ? 'are' : 'is');
-                echo <<<EOT
-<div class="alert alert-success" role="alert">
-    $list $wasWere uploaded to $location and $isAre now accessible there.
-</div>
-EOT;
-            }
-        }
-
-    }
-
-    ?>
-    <form class="needs-validation" enctype="multipart/form-data" action="<?= $_SERVER['PHP_SELF'] ?>" method="post"
+    if (empty($email)) {
+        echo <<<EOT
+    <form class="needs-validation" enctype="multipart/form-data" action="{$_SERVER['PHP_SELF']}" method="post"
           novalidate>
         <div class="form-group">
             <input type="email" class="form-control" id="email" name="email"
-                   value="<?= $email ?>"
                    placeholder="Gann email address">
             <small>Email address</small>
         </div>
         <div class="form-group">
-            <div class="custom-file">
-                <input type="file" multiple class="custom-file-input" id="upload" name="upload[]">
-                <label class="custom-file-label" for="upload">Choose file</label>
-            </div>
-            <small>Files to add to queue (maximum size is <?= pretty_file_upload_max_size() ?>)</small>
-        </div>
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Add to Queue</button>
+            <button type="submit" class="btn btn-primary">Sign In</button>
         </div>
     </form>
+EOT;
+    } else {
+        $gannUser = preg_replace('/([^@]+)@gannacademy.org/', '$1', $email);
+        $maxSize = pretty_file_upload_max_size();
+        echo <<<EOT
+    <div class="container">
+        <div class="row">
+            <form id="signout" method="post" class="form-inline">
+                <label>Signed in as {$email}.&nbsp;</label>
+                <button class="btn btn-outline-primary" type="submit" name="email" value="">Sign Out</button>
+            </form>
+            </div>
+        <div class="row">Maximum file upload size is {$maxSize}.</div>
+    </div>
+    <div class="container" id="queues">
+        <div class="flex-row">
+            <iframe src="/~sbattis/octoprint/upload/3dprint/{$gannUser}?t=Add to 3D Printing Queue"></iframe>
+            <iframe src="/~sbattis/octoprint/upload/laser/{$gannUser}?t=Add to Laser Cutting Queue"></iframe>
+            <iframe src="/~sbattis/octoprint/upload/qdrive/{$gannUser}?t=Upload to Q: Drive&c=no"></iframe>
+        </div>
+    </div>
+EOT;
+    }
+    ?>
 </div>
+
+
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
         crossorigin="anonymous"></script>
@@ -146,11 +117,5 @@ EOT;
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"
         integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
         crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js"></script>
-<script>
-    $(document).ready(function () {
-        bsCustomFileInput.init()
-    })
-</script>
 </body>
 </html>
