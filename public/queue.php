@@ -23,7 +23,7 @@ if (isset($_REQUEST['email']) && empty($_REQUEST['email'])) {
     setcookie('email', null);
 } elseif (empty($_REQUEST['email']) === false) {
     $email = $_REQUEST['email'];
-    setcookie('email', $email);
+    setcookie('email', $email, time() + getenv('COOKIE_EXPIRY'));
 } elseif (empty($_COOKIE['email']) === false) {
     $email = $_COOKIE['email'];
 }
