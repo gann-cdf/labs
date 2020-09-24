@@ -1,6 +1,6 @@
 <?php
 
-$printers = $db->query('SELECT * FROM `3d_printers`');
+$printers = $db->query('SELECT * FROM `3d_printers` ORDER BY `order` ASC');
 $statement = $db->prepare("SELECT * FROM `strings` WHERE `category` = 'navbar.php'");
 $result = $statement->execute();
 $rows = $statement->fetchAll();
