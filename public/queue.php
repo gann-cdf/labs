@@ -42,6 +42,7 @@ if (isset($_REQUEST['email']) && empty($_REQUEST['email'])) {
             height: 100%;
             margin: 0;
             padding: 0;
+            --navbar-height: 0;
         }
 
         .wrapper {
@@ -49,8 +50,8 @@ if (isset($_REQUEST['email']) && empty($_REQUEST['email'])) {
             empty-cells: show;
             border-collapse: collapse;
             width: 100%;
-            max-width: 8in;
-            height: 100%;
+            max-width: 900px;
+            height: calc(100% - var(--navbar-height));
             margin: auto;
         }
 
@@ -69,8 +70,8 @@ if (isset($_REQUEST['email']) && empty($_REQUEST['email'])) {
     </style>
 </head>
 <body>
+<?php include 'navbar.php'; ?>
 <div class="wrapper">
-    <?php include 'navbar.php'; ?>
     <?php
     if (empty($strings['QUEUE_ANNOUNCEMENT']) === false) {
         echo <<<EOT
@@ -93,5 +94,8 @@ EOT;
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js"
         integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4"
         crossorigin="anonymous"></script>
+<script>
+    document.body.style.setProperty('--navbar-height', document.querySelector('.navbar').clientHeight + 'px')
+</script>
 </body>
 </html>
