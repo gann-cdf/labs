@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../drupal.php';
 
 use Dotenv\Dotenv;
 
@@ -38,28 +37,41 @@ if (isset($_REQUEST['email']) && empty($_REQUEST['email'])) {
           integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/<?= $strings['FONT_AWESOME'] ?>.js" crossorigin="anonymous"></script>
     <style>
-        #queues {
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
-        #queues iframe {
-            border: none;
-            margin: 1rem;
-            height: 25vh;
+        .wrapper {
+            display: table;
+            empty-cells: show;
+            border-collapse: collapse;
             width: 100%;
+            max-width: 8in;
+            height: 100%;
+            margin: auto;
+        }
+
+        .container {
+            display: table-row;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        iframe {
+            border: none;
+            display: block;
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
 <body>
-<?php include 'navbar.php'; ?>
-<div class="container">
-    <div class="jumbotron">
-        <h1><i class="fas fa-folder-plus"></i> <?= $strings['QUEUE_TITLE'] ?></h1>
-        <hr>
-        <p><?= $strings['QUEUE_SUBTITLE'] ?></p>
-    </div>
-
+<div class="wrapper">
+    <?php include 'navbar.php'; ?>
     <?php
-
     if (empty($strings['QUEUE_ANNOUNCEMENT']) === false) {
         echo <<<EOT
     <div class="alert alert-{$strings['QUEUE_ANNOUNCEMENT_LEVEL']}" role="alert">
@@ -67,47 +79,11 @@ if (isset($_REQUEST['email']) && empty($_REQUEST['email'])) {
     </div>
 EOT;
     }
-
-    if (empty($email)) {
-        echo <<<EOT
-    <form class="needs-validation" enctype="multipart/form-data" action="{$_SERVER['PHP_SELF']}" method="post"
-          novalidate>
-        <div class="form-group">
-            <input type="email" class="form-control" id="email" name="email"
-                   placeholder="Gann email address">
-            <small>Email address</small>
-        </div>
-        <div class="form-group">
-            <button type="submit" class="btn btn-primary">Sign In</button>
-        </div>
-    </form>
-EOT;
-    } else {
-        $gannUser = preg_replace('/([^@]+)@gannacademy.org/', '$1', $email);
-        $maxSize = pretty_file_upload_max_size();
-        echo <<<EOT
-    <div class="container">
-        <div class="row">
-            <form id="signout" method="post" class="form-inline">
-                <label>Signed in as {$email}.&nbsp;</label>
-                <button class="btn btn-outline-primary" type="submit" name="email" value="">Sign Out</button>
-            </form>
-            </div>
-        <div class="row">Maximum file upload size is {$maxSize}.</div>
-    </div>
-    <div class="container" id="queues">
-        <div class="flex-row">
-            <iframe src="/~sbattis/octoprint/upload/3dprint/{$gannUser}?t=Add to 3D Printing Queue"></iframe>
-            <iframe src="/~sbattis/octoprint/upload/laser/{$gannUser}?t=Add to Laser Cutting Queue"></iframe>
-            <iframe src="/~sbattis/octoprint/upload/qdrive/{$gannUser}?t=Upload to Q: Drive&c=no"></iframe>
-        </div>
-    </div>
-EOT;
-    }
     ?>
+    <div class="container">
+        <iframe src="/~sbattis/octoprint/"></iframe>
+    </div>
 </div>
-
-
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
         integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
         crossorigin="anonymous"></script>
